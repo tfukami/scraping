@@ -43,7 +43,7 @@ class TabelogSpider(scrapy.Spider):
         soup = BeautifulSoup(response.body, 'html.parser')
         urls = soup.find("div", class_="taglist").ul
         for url in urls.find_all("li"):
-            # print('INITIAL:{}'.format(url.a.get('href')))
+            print('INITIAL:{}'.format(url.a.get('href')))
             yield scrapy.Request(response.urljoin(url.a.get('href')), self.parse_rsname)
 
     def parse_rsname(self, response):
