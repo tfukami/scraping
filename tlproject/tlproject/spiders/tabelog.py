@@ -1,4 +1,5 @@
 import scrapy
+from logging import getLogger,Formatter,StreamHandler,FileHandler,DEBUG
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -12,6 +13,38 @@ class TabelogSpider(scrapy.Spider):
     start_urls = ['https://tabelog.com/']
     re_fig = re.compile("[*0-9]")
 
+    logger = getLogger('test')
+    formatter = Formatter\
+            ('%(asctime)s [%(levelname)s] [%(filename)s: \
+            %(funcName)s: %(lineno)d] %(message)s')
+    handlerSh = StreamHandler()
+    handlerFile = FileHandler('error.log')
+    handlerSh.setFormatter(formatter)
+    handlerSh.setLevel(DEBUG)
+    handlerFile.setLevel(DEBUG)
+    handlerFile.setFormatter(formatter)
+    logger.setLevel(DEBUG)
+    logger.addHandler(handlerSh)
+    logger.addHandler(handlerFile)
+    logger.debug('log start')
+
+    #def __init__(self, *args, **kwargs):
+    #    logger = getLogger('test')
+    #    formatter = Formatter\
+    #            ('%(asctime)s [%(levelname)s] [%(filename)s: \
+    #            %(funcName)s: %(lineno)d] %(message)s')
+    #    handlerSh = StreamHandler()
+    #    handlerFile = FileHandler('error.log')
+    #    handlerSh.setFormatter(formatter)
+    #    handlerSh.setLevel(DEBUG)
+    #    handlerFile.setLevel(DEBUG)
+    #    handlerFile.setFormatter(formatter)
+    #    logger.setLevel(DEBUG)
+    #    logger.addHandler(handlerSh)
+    #    logger.addHandler(handlerFile)
+    #    logger.debug('log start')
+    #    super().__init__(*args, **kwargs)
+
     def parse(self, response):
 
         soup = BeautifulSoup(response.body, 'html.parser')
@@ -20,14 +53,14 @@ class TabelogSpider(scrapy.Spider):
             url = top.a.get('href')
             
             if 'tokyo' in url:
-                print('URL:{} '.format(url))
+                self.logger.debug('URL:{} '.format(url))
                 yield scrapy.Request((response.urljoin(url)), self.parse_all)
 
     def parse_all(self, response):
 
         soup = BeautifulSoup(response.body, 'html.parser')
         url = soup.find("div", class_="navi-count").a.get('href')
-        print('ALL:{}'.format(url))
+        self.logger.debug('ALL:{}'.format(url))
         yield scrapy.Request(response.urljoin(self.start_urls[0] + url), self.parse_area)
 
     def parse_area(self, response):
@@ -35,7 +68,7 @@ class TabelogSpider(scrapy.Spider):
         soup = BeautifulSoup(response.body, 'html.parser')
         urls = soup.find("div", class_="area").ul
         for url in urls.find_all("li"):
-            print('AREA:{}'.format(url.a.get('href')))
+            self.logger.debug('AREA:{}'.format(url.a.get('href')))
             yield scrapy.Request(response.urljoin(url.a.get('href')), self.parse_initial)
 
     def parse_initial(self, response):
@@ -43,7 +76,7 @@ class TabelogSpider(scrapy.Spider):
         soup = BeautifulSoup(response.body, 'html.parser')
         urls = soup.find("div", class_="taglist").ul
         for url in urls.find_all("li"):
-            print('INITIAL:{}'.format(url.a.get('href')))
+            self.logger.debug('INITIAL:{}'.format(url.a.get('href')))
             yield scrapy.Request(response.urljoin(url.a.get('href')), self.parse_rsname)
 
     def parse_rsname(self, response):
@@ -62,7 +95,7 @@ class TabelogSpider(scrapy.Spider):
             yield scrapy.Request(response.urljoin(page.get('href')), self.parse_location)
 
         for url in soup.find_all("a", text="次の20件"):
-            print('PRINT:{}'.format(url.get('href')))
+            self.logger.debug('PRINT:{}'.format(url.get('href')))
             yield scrapy.Request(response.urljoin(url.get('href')), self.parse_pref)
 
     def parse_location(self, response):
@@ -71,17 +104,25 @@ class TabelogSpider(scrapy.Spider):
 
         item = TLinfo()
         item['url'] = response.url
-        item['name'] = soup.h2.span.string.replace('\n', '').replace(' ', '')
+        try:
+            item['name'] = soup.h2.span.string.replace('\n', '').replace(' ', '')
+        except:
+            self.logger.waring('No name url:{}'.format(respons.url))
+            item['name'] = None
         
         try:
             item['eval_point'] = soup.b.span.string
         except:
+            self.logger.info('no eval_point:{}'.format(response.url))
             item['eval_point'] = None
         
         try:
-            item['eval_tex'] = self.parse_text_page(
-                    soup.find("p", class_="rstdtl-top-rvwlst__more-link").a.get('href')
-                    )
+            if item['name']:
+                item['eval_tex'] = self.parse_text_page(
+                        soup.find("p", class_="rstdtl-top-rvwlst__more-link").a.get('href')
+                        )
+            else:
+                item['eval_tex'] = []
         except:
             item['eval_tex'] = []
 

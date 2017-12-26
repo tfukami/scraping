@@ -73,6 +73,9 @@ class MySQLPipeLine(object):
         self.conn.close()
 
     def process_item(self, item, spider):
+        if not item['name']:
+            raise DropItem('No name Data:{}'.format(item['url']))
+
         sql_insert = "insert into raw_data (\
                 url, \
                 name, \
