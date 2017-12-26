@@ -28,22 +28,6 @@ class TabelogSpider(scrapy.Spider):
     logger.addHandler(handlerFile)
     logger.debug('log start')
 
-    #def __init__(self, *args, **kwargs):
-    #    logger = getLogger('test')
-    #    formatter = Formatter\
-    #            ('%(asctime)s [%(levelname)s] [%(filename)s: \
-    #            %(funcName)s: %(lineno)d] %(message)s')
-    #    handlerSh = StreamHandler()
-    #    handlerFile = FileHandler('error.log')
-    #    handlerSh.setFormatter(formatter)
-    #    handlerSh.setLevel(DEBUG)
-    #    handlerFile.setLevel(DEBUG)
-    #    handlerFile.setFormatter(formatter)
-    #    logger.setLevel(DEBUG)
-    #    logger.addHandler(handlerSh)
-    #    logger.addHandler(handlerFile)
-    #    logger.debug('log start')
-    #    super().__init__(*args, **kwargs)
 
     def parse(self, response):
 
@@ -56,12 +40,14 @@ class TabelogSpider(scrapy.Spider):
                 self.logger.debug('URL:{} '.format(url))
                 yield scrapy.Request((response.urljoin(url)), self.parse_all)
 
+
     def parse_all(self, response):
 
         soup = BeautifulSoup(response.body, 'html.parser')
         url = soup.find("div", class_="navi-count").a.get('href')
         self.logger.debug('ALL:{}'.format(url))
         yield scrapy.Request(response.urljoin(self.start_urls[0] + url), self.parse_area)
+
 
     def parse_area(self, response):
 
@@ -71,6 +57,7 @@ class TabelogSpider(scrapy.Spider):
             self.logger.debug('AREA:{}'.format(url.a.get('href')))
             yield scrapy.Request(response.urljoin(url.a.get('href')), self.parse_initial)
 
+
     def parse_initial(self, response):
 
         soup = BeautifulSoup(response.body, 'html.parser')
@@ -79,6 +66,7 @@ class TabelogSpider(scrapy.Spider):
             self.logger.debug('INITIAL:{}'.format(url.a.get('href')))
             yield scrapy.Request(response.urljoin(url.a.get('href')), self.parse_rsname)
 
+
     def parse_rsname(self, response):
 
         soup = BeautifulSoup(response.body, 'html.parser')
@@ -86,6 +74,7 @@ class TabelogSpider(scrapy.Spider):
         for url in urls:
             # print('RSTNAME:{}'.format(url.a.get('href')))
             yield scrapy.Request(response.urljoin(url.a.get('href')), self.parse_location)
+
 
     def parse_pref(self, response):
 
@@ -97,6 +86,7 @@ class TabelogSpider(scrapy.Spider):
         for url in soup.find_all("a", text="次の20件"):
             self.logger.debug('PRINT:{}'.format(url.get('href')))
             yield scrapy.Request(response.urljoin(url.get('href')), self.parse_pref)
+
 
     def parse_location(self, response):
 
@@ -179,6 +169,7 @@ class TabelogSpider(scrapy.Spider):
             item['longitude'] = None
 
         yield item
+
 
     def parse_text_page(self, url):
         comments = []
