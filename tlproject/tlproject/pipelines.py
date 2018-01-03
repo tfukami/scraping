@@ -75,85 +75,102 @@ class MySQLPipeLine(object):
     def process_item(self, item, spider):
         if not item['name']:
             raise DropItem('No name Data:{}'.format(item['url']))
+        check_sql = \
+                'select url from raw_data where url = "{}"'\
+                .format(item['url'])
+        self.c.execute(check_sql)
+        self.conn.commit()
 
-        sql_insert = "insert into raw_data (\
-                url, \
-                name, \
-                eval_point, \
-                MAX_budget_dinner, \
-                MIN_budget_dinner, \
-                MAX_budget_lunch, \
-                MIN_budget_lunch, \
-                seats, \
-                category, \
-                address, \
-                latitude, \
-                longitude) \
-                values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-        insert_item = (
-                item['url'],
-                item['name'], 
-                item['eval_point'],
-                item['MAX_budget_dinner'],
-                item['MIN_budget_dinner'],
-                item['MAX_budget_lunch'],
-                item['MIN_budget_lunch'],
-                item['seats'],
-                item['category'],
-                item['address'],
-                item['latitude'],
-                item['longitude'],
-                )
-        try:
-            self.c.execute(sql_insert, insert_item)
-            self.conn.commit()
-        except:
-            print('some error happen in {}'.format(insert_item))
-        for cmmnt in item['eval_tex']:
-            cmmnt_insert = "insert into raw_comments_data (\
-                    name, \
+        if self.c.fetchall():
+            print('Item alerady exists in db')
+        else :
+            sql_insert = "insert into raw_data (\
                     url, \
-                    year, \
-                    month, \
+                    name, \
+                    eval_point, \
+                    MAX_budget_dinner, \
+                    MIN_budget_dinner, \
+                    MAX_budget_lunch, \
+                    MIN_budget_lunch, \
+                    seats, \
+                    category, \
+                    address, \
                     latitude, \
-                    longitude, \
-                    user_name, \
-                    user_age, \
-                    user_gender, \
-                    user_live_city, \
-                    title, \
-                    comment, \
-                    max_price, \
-                    min_price, \
-                    timing, \
-                    log_cnt, \
-                    follower_cnt, \
-                    following_cnt) \
-                    values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,\
-                    %s, %s, %s, %s, %s, %s, %s, %s)"
-            cmmnt_item = (
-                    item['name'],
+                    longitude) \
+                    values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+            insert_item = (
                     item['url'],
-                    cmmnt['year'],
-                    cmmnt['month'],
+                    item['name'], 
+                    item['eval_point'],
+                    item['MAX_budget_dinner'],
+                    item['MIN_budget_dinner'],
+                    item['MAX_budget_lunch'],
+                    item['MIN_budget_lunch'],
+                    item['seats'],
+                    item['category'],
+                    item['address'],
                     item['latitude'],
                     item['longitude'],
-                    cmmnt['user_name'],
-                    cmmnt['user_age'],
-                    cmmnt['user_gender'],
-                    cmmnt['user_live_city'],
-                    cmmnt['title'],
-                    cmmnt['comment'],
-                    cmmnt['max_price'],
-                    cmmnt['min_price'],
-                    cmmnt['timing'],
-                    cmmnt['log_cnt'],
-                    cmmnt['follower_cnt'],
-                    cmmnt['following_cnt'],
                     )
             try:
-                self.c.execute(cmmnt_insert, cmmnt_item)
+                self.c.execute(sql_insert, insert_item)
                 self.conn.commit()
             except:
-                print('some error happen in comments {}'.format(cmmnt_item))
+                print('some error happen in {}'.format(insert_item))
+        for cmmnt in item['eval_tex']:
+            check_sql = \
+                    'select url, user_name from raw_comments_data where url = "{}" and user_name = "{}"'\
+                    .format(item['url'], cmmnt['user_name'])
+            self.c.execute(check_sql)
+            self.conn.commit()
+
+            if self.c.fetchall():
+                print('Comment aleardy exists in db')
+            else:
+                cmmnt_insert = "insert into raw_comments_data (\
+                        name, \
+                        url, \
+                        year, \
+                        month, \
+                        latitude, \
+                        longitude, \
+                        user_name, \
+                        user_age, \
+                        user_gender, \
+                        user_live_city, \
+                        title, \
+                        comment, \
+                        max_price, \
+                        min_price, \
+                        timing, \
+                        log_cnt, \
+                        follower_cnt, \
+                        following_cnt) \
+                        values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,\
+                        %s, %s, %s, %s, %s, %s, %s, %s)"
+                cmmnt_item = (
+                        item['name'],
+                        item['url'],
+                        cmmnt['year'],
+                        cmmnt['month'],
+                        item['latitude'],
+                        item['longitude'],
+                        cmmnt['user_name'],
+                        cmmnt['user_age'],
+                        cmmnt['user_gender'],
+                        cmmnt['user_live_city'],
+                        cmmnt['title'],
+                        cmmnt['comment'],
+                        cmmnt['max_price'],
+                        cmmnt['min_price'],
+                        cmmnt['timing'],
+                        cmmnt['log_cnt'],
+                        cmmnt['follower_cnt'],
+                        cmmnt['following_cnt'],
+                        )
+                try:
+                    self.c.execute(cmmnt_insert, cmmnt_item)
+                    self.conn.commit()
+                except:
+                    print('some error happen in comments {}'.format(cmmnt_item))
         return item

@@ -53,18 +53,20 @@ class TabelogSpider(scrapy.Spider):
 
         soup = BeautifulSoup(response.body, 'html.parser')
         urls = soup.find("div", class_="area").ul
-        for url in urls.find_all("li"):
-            self.logger.debug('AREA:{}'.format(url.a.get('href')))
-            yield scrapy.Request(response.urljoin(url.a.get('href')), self.parse_initial)
+        if urls:
+            for url in urls.find_all("li"):
+                self.logger.debug('AREA:{}'.format(url.a.get('href')))
+                yield scrapy.Request(response.urljoin(url.a.get('href')), self.parse_initial)
 
 
     def parse_initial(self, response):
 
         soup = BeautifulSoup(response.body, 'html.parser')
         urls = soup.find("div", class_="taglist").ul
-        for url in urls.find_all("li"):
-            self.logger.debug('INITIAL:{}'.format(url.a.get('href')))
-            yield scrapy.Request(response.urljoin(url.a.get('href')), self.parse_rsname)
+        if urls:
+            for url in urls.find_all("li"):
+                self.logger.debug('INITIAL:{}'.format(url.a.get('href')))
+                yield scrapy.Request(response.urljoin(url.a.get('href')), self.parse_rsname)
 
 
     def parse_rsname(self, response):
@@ -97,7 +99,7 @@ class TabelogSpider(scrapy.Spider):
         try:
             item['name'] = soup.h2.span.string.replace('\n', '').replace(' ', '')
         except:
-            self.logger.waring('No name url:{}'.format(respons.url))
+            self.logger.warning('No name url:{}'.format(respons.url))
             item['name'] = None
         
         try:
@@ -182,7 +184,7 @@ class TabelogSpider(scrapy.Spider):
                 a_tag = tag.find_elements_by_tag_name('a')
                 a_tag[1].click()
             except:
-                print("error:{}".format(tag))
+                self.logger.debug("error:{}".format(tag))
 
         time.sleep(1)
         soup = BeautifulSoup(driver.page_source, 'html.parser')
