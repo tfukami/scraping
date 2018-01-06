@@ -106,7 +106,7 @@ class TabelogSpider(scrapy.Spider):
             item['eval_point'] = soup.b.span.string
         except:
             self.logger.info('no eval_point:{}'.format(response.url))
-            item['eval_point'] = None
+            item['eval_point'] = -1
         
         try:
             if item['name']:
@@ -122,8 +122,10 @@ class TabelogSpider(scrapy.Spider):
         
         try:
             item['seats'] = tbl[1].p.string.replace("席","")
+            if not self.re_fig.match(item['seats']):
+                item['seats'] = -1
         except:
-            item['seats'] = None
+            item['seats'] = -1
         
         try:
             budgets_dinner = soup\
@@ -132,11 +134,11 @@ class TabelogSpider(scrapy.Spider):
                 item['MAX_budget_dinner'] = budgets_dinner[1]
                 item['MIN_budget_dinner'] = budgets_dinner[0]
             else:
-                item['MAX_budget_dinner'] = None
-                item['MIN_budget_dinner'] = None
+                item['MAX_budget_dinner'] = -1 
+                item['MIN_budget_dinner'] = -1
         except:
-            item['MAX_budget_dinner'] = None
-            item['MIN_budget_dinner'] = None
+            item['MAX_budget_dinner'] = -1 
+            item['MIN_budget_dinner'] = -1
 
         try:
             budgets_lunch = soup\
@@ -145,21 +147,21 @@ class TabelogSpider(scrapy.Spider):
                 item['MAX_budget_lunch'] = budgets_lunch[1]
                 item['MIN_budget_lunch'] = budgets_lunch[0]
             else:
-                item['MAX_budget_lunch'] = None
-                item['MIN_bidget_lunch'] = None
+                item['MAX_budget_lunch'] = -1
+                item['MIN_bidget_lunch'] = -1
         except:
-            item['MAX_budget_lunch'] = None
-            item['MIN_budget_lunch'] = None
+            item['MAX_budget_lunch'] = -1
+            item['MIN_budget_lunch'] = -1
         
         try:
             item['category'] = tbl[0].find_all("td")[1].span.string
         except:
-            item['category'] = None
+            item['category'] = -1
 
         try:
             item['address'] = tbl[0].find("p", class_="rstinfo-table__address").get_text()
         except:
-            item['address'] = None
+            item['address'] = -1
 
         try:
             latlon = tbl[0].find("img", class_="js-map-lazyload").get("data-original")
@@ -167,8 +169,8 @@ class TabelogSpider(scrapy.Spider):
             item['latitude'] = latlon[0]
             item['longitude'] = latlon[1]
         except:
-            item['latitude'] = None
-            item['longitude'] = None
+            item['latitude'] = -1
+            item['longitude'] = -1
 
         yield item
 
