@@ -36,7 +36,6 @@ class EventSpider(scrapy.Spider):
     def parse_event(self, response):
         
         soup = BeautifulSoup(response.body, 'html.parser')
-        item = EVinfo()
 
         for urls in soup.find('table', id='table1').find_all('a'):
             url = urls.get('href')
@@ -44,6 +43,7 @@ class EventSpider(scrapy.Spider):
             self.logger.debug(urls.get('href'))
             # self.logger.debug(urls.get('href').find_next('td').get_text())
             if url and 'http://live-events.a-jp.org/soko/p/' not in url:
+                item = EVinfo()
                 item['url'] = url
                 item['name'] = urls.get_text()
                 item['place'] = urls.find_next('td').get_text()
