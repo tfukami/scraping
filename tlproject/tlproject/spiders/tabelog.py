@@ -104,6 +104,8 @@ class TabelogSpider(scrapy.Spider):
         
         try:
             item['eval_point'] = soup.b.span.string
+            if not self.re_fig.match(item['eval_point']):
+                item['eval_point'] = -1
         except:
             self.logger.info('no eval_point:{}'.format(response.url))
             item['eval_point'] = -1
