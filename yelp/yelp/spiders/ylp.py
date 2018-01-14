@@ -12,10 +12,62 @@ import re
 class YlpSpider(scrapy.Spider):
     name = 'ylp'
     allowed_domains = ['yelp.com']
-    start_urls = [\
+    pref = ['北海道',
+            '青森県',
+            '山形県',
+            '秋田県',
+            '岩手県',
+            '宮城県',
+            '福島県',
+            '茨城県',
+            '栃木県',
+            '群馬県',
+            '埼玉県',
+            '千葉県',
+            '東京都',
+            '神奈川県',
+            '山梨県',
+            '新潟県',
+            '富山県',
+            '福井県',
+            '石川県',
+            '長野県',
+            '静岡県',
+            '愛知県',
+            '岐阜県',
+            '三重県',
+            '滋賀県',
+            '和歌山県',
+            '奈良県',
+            '京都府',
+            '大阪府',
+            '兵庫県',
+            '鳥取県',
+            '島根県',
+            '岡山県',
+            '広島県',
+            '山口県',
+            '愛媛県',
+            '香川県',
+            '高知県',
+            '徳島県',
+            '福岡県',
+            '大分県',
+            '長崎県',
+            '佐賀県',
+            '熊本県',
+            '宮崎県',
+            '鹿児島県',
+            '沖縄県']
+#    start_urls = [\
+#            'https://www.yelp.com/search?find_desc=&find_loc=Tokyo%2C+{}%2C+Japan&ns=1'\
+#            .format(urllib.parse.quote("東京都"))\
+#            ]
+    start_urls = []
+    for p in pref:
+        start_urls.append(\
             'https://www.yelp.com/search?find_desc=&find_loc=Tokyo%2C+{}%2C+Japan&ns=1'\
-            .format(urllib.parse.quote("東京都"))\
-            ]
+            .format(urllib.parse.quote(p)))
     re_fig = re.compile("[*0-9]")
     url_head = 'https://www.yelp.com'
 
@@ -33,6 +85,7 @@ class YlpSpider(scrapy.Spider):
     logger.addHandler(handlerSh)
     logger.addHandler(handlerFile)
     logger.debug('log start')
+#    logger.debug('START_URLS:{}'.format(start_urls))
 
 
 #    def start_requests(self):
