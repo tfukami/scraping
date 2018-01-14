@@ -103,6 +103,14 @@ class YlpSpider(scrapy.Spider):
             item['rating'] = None
 
         try:
+            item['category'] = response.xpath(\
+                    '//span[@class="category-str-list"]/a/text()'\
+                    )[0].extract().replace('\n','').replace('  ','')
+        except:
+            self.logger.warning('There is no category in {}'.format(response))
+            item['category'] = None
+
+        try:
             item['review_cnt'] = response.xpath(\
                     '//span[@class="review-count rating-qualifier"]/text()'\
                     )[0].extract().replace('\n','').replace('  ','') 
@@ -123,9 +131,13 @@ class YlpSpider(scrapy.Spider):
             item['longitude'] = None
 
         try:
-            item['address'] = response.xpath(\
-                    '//strong[@class="street-address"]/text()'
-                    )[0].extract().replace('\n','').replace('  ','') 
+            addrss = ''
+            for ad in response.xpath('//strong[@class="street-address"]/address/text()'):
+                    addrss += ad.extract().replace('\n','').replace('  ','').replace(',','')
+            item['address'] = addrss
+#            item['address'] = response.xpath(\
+#                    '//strong[@class="street-address"]/address/text()'
+#                    )[0].extract().replace('\n','').replace('  ','') 
         except:
             self.logger.warning('There is no address in {}'.format(response))
             item['address'] = None

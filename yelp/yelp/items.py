@@ -12,6 +12,7 @@ class YPInfo(scrapy.Item):
     jp_name = scrapy.Field()
     rating = scrapy.Field()
     price = scrapy.Field()
+    category = scrapy.Field()
     latitude = scrapy.Field()
     longitude = scrapy.Field()
     address = scrapy.Field()

@@ -30,6 +30,7 @@ class MySQLPipeLine(object):
                 url varchar(1000),
                 name varchar(255),
                 jp_name varchar(255),
+                category varchar(255),
                 rating varchar(100),
                 review_cnt varchar(100),
                 price varchar(255),
@@ -63,18 +64,20 @@ class MySQLPipeLine(object):
                     url, \
                     name, \
                     jp_name, \
+                    category, \
                     rating, \
                     review_cnt, \
                     price, \
                     address, \
                     latitude, \
                     longitude) \
-                    values (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                    values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 
             insert_item = (
                     item['url'],
                     item['name'],
                     item['jp_name'],
+                    item['category'],
                     item['rating'],
                     item['review_cnt'],
                     item['price'],
